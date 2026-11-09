@@ -1,0 +1,12 @@
+agents:
+  queue: "lab-linux"
+
+steps:
+  - label: ":python: Lint and test"
+    plugins:
+      - docker#v5.14.0:
+          image: "python:3.12"
+    commands:
+      - "pip install ruff"
+      - "ruff check ."
+      - "python -m unittest discover -s tests -t . -v"
