@@ -6,7 +6,17 @@ steps:
     plugins:
       - docker#v5.14.0:
           image: "python:3.12"
+          environment:
+            - "PYTHONDONTWRITEBYTECODE=1"
+            - "RUFF_CACHE_DIR=/tmp/ruff-cache"
     commands:
-      - "pip install ruff"
+      - "pip install -r requirements-dev.txt"
       - "ruff check ."
-      - "python -m unittest discover -s tests -t . -v"
+      - "pytest"
+
+  - label: ":postgres: Integration test"
+    env:
+      COMPOSE_PROJECT_NAME: "vuln-digest-${BUILDKITE_BUILD_NUMBER}"
+    command: |
+      trap 'docker compose down --volumes' EXIT
+      docker compose run --rm test

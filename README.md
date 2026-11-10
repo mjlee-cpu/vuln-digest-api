@@ -23,7 +23,17 @@ CI/CD(Buildkite) 파이프라인을 연습하기 위해 단계별로 키워 갑�
 프로젝트 폴더(이 파일이 있는 곳)에서 실행합니다.
 
 ```bash
-python3 -m unittest discover -s tests -t . -v
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+pytest
+```
+
+DB가 필요한 통합 테스트는 `DATABASE_URL`이 없으면 건너뜁니다. DB와 함께 실행하려면 다음을 씁니다.
+
+```bash
+docker compose run --rm test
+docker compose down --volumes
 ```
 
 ## 단계별 계획

@@ -1,0 +1,29 @@
+# 통합 테스트용: DB 컨테이너를 띄우고, 테스트 컨테이너가 DB 준비를 기다렸다가 실행한다.
+# 외부로 포트를 열지 않는다. 컨테이너끼리는 서비스 이름(db)으로 접속한다.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: vuln
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d vuln"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  test:
+    image: python:3.12
+    working_dir: /workdir
+    volumes:
+      - .:/workdir
+    environment:
+      DATABASE_URL: postgresql://app:app@db:5432/vuln
+      PYTHONDONTWRITEBYTECODE: "1"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "pip install --quiet -r requirements.txt -r requirements-dev.txt &&
+             pytest"
