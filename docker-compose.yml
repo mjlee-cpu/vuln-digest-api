@@ -1,6 +1,18 @@
 # 통합 테스트용: DB 컨테이너를 띄우고, 테스트 컨테이너가 DB 준비를 기다렸다가 실행한다.
 # 외부로 포트를 열지 않는다. 컨테이너끼리는 서비스 이름(db)으로 접속한다.
 services:
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://app:app@db:5432/vuln
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
   db:
     image: postgres:16
     environment:

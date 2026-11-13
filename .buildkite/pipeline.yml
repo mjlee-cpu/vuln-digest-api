@@ -20,3 +20,18 @@ steps:
     command: |
       trap 'docker compose down --volumes' EXIT
       docker compose run --rm test
+  
+  - wait 
+
+  - label: ":docker: Build image"
+    command: "docker build -t vuln-digest-api:$BUILDKITE_COMMIT ."
+  
+  - wait
+
+  - label: ":mag: Smoke test"
+    env:
+      COMPOSE_PROJECT_NAME: "vuln-digest-smoke-${BUILDKITE_BUILD_NUMBER}"
+    command: |
+      trap 'docker compose down --volumes' EXIT
+      docker compose up -d --build --wait app
+      docker compose exec -T app python -c "import urllib.request;print(urllib.request.urlopen('http://127.0.0.1:8000/health').read())"
